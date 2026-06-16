@@ -43,6 +43,15 @@ Each prints its statistics and writes PNGs to `analysis/Final_analyses_and_plots
 
 Training, cluster sweeps, the per-run extraction steps, and the compositional probing are documented step-by-step in [`startup_demo.md`](startup_demo.md).
 
+## Data
+
+This repository ships the **shareable** data needed to reproduce everything downstream of the restricted inputs:
+
+- `analysis/Cognitive_analysis/Data/Infant_Data/infant_foraging_release.csv` — anonymized infant foraging trials (no identifiers; integer `subj_id` only).
+- Model-derived metric tables and the derived human topology table.
+
+It **excludes** raw infant data / demographics / IDs and the HCP-derived connectomes, which cannot be redistributed. See [`DATA.md`](DATA.md) for the exact exclusions and how to obtain the restricted inputs (infant data: contact the authors under ethics/consent; HCP data: https://www.humanconnectome.org/).
+
 ## Environments
 
 - Python: conda env `ngym39` (PyTorch + neurogym + analysis deps).
