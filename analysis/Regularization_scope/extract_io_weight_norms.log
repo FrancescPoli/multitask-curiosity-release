@@ -1,0 +1,74 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+C:\Users\fp02\AppData\Local\anaconda3\envs\ngym39\lib\site-packages\gym\envs\registration.py:421: UserWarning: [33mWARN: The `registry.all` method is deprecated. Please use `registry.values` instead.[0m
+  logger.warn(
+Init already cached at analysis\Regularization_scope\io_weight_norms_init.csv
+Resuming: 5 runs already processed.
+Total runs to consider: 3136
+[50/3136] added=45 skipped=5 failed=0
+[100/3136] added=95 skipped=5 failed=0
+[150/3136] added=145 skipped=5 failed=0
+[200/3136] added=195 skipped=5 failed=0
+[250/3136] added=245 skipped=5 failed=0
+[300/3136] added=295 skipped=5 failed=0
+[350/3136] added=345 skipped=5 failed=0
+[400/3136] added=395 skipped=5 failed=0
+[450/3136] added=445 skipped=5 failed=0
+[500/3136] added=495 skipped=5 failed=0
+[550/3136] added=545 skipped=5 failed=0
+[600/3136] added=595 skipped=5 failed=0
+[650/3136] added=645 skipped=5 failed=0
+[700/3136] added=695 skipped=5 failed=0
+[750/3136] added=745 skipped=5 failed=0
+[800/3136] added=795 skipped=5 failed=0
+[850/3136] added=845 skipped=5 failed=0
+[900/3136] added=895 skipped=5 failed=0
+[950/3136] added=945 skipped=5 failed=0
+[1000/3136] added=995 skipped=5 failed=0
+[1050/3136] added=1045 skipped=5 failed=0
+[1100/3136] added=1095 skipped=5 failed=0
+[1150/3136] added=1145 skipped=5 failed=0
+[1200/3136] added=1195 skipped=5 failed=0
+[1250/3136] added=1245 skipped=5 failed=0
+[1300/3136] added=1295 skipped=5 failed=0
+[1350/3136] added=1345 skipped=5 failed=0
+[1400/3136] added=1395 skipped=5 failed=0
+[1450/3136] added=1445 skipped=5 failed=0
+[1500/3136] added=1495 skipped=5 failed=0
+[1550/3136] added=1545 skipped=5 failed=0
+[1600/3136] added=1595 skipped=5 failed=0
+[1650/3136] added=1645 skipped=5 failed=0
+[1700/3136] added=1695 skipped=5 failed=0
+[1750/3136] added=1745 skipped=5 failed=0
+[1800/3136] added=1795 skipped=5 failed=0
+[1850/3136] added=1845 skipped=5 failed=0
+[1900/3136] added=1895 skipped=5 failed=0
+[1950/3136] added=1945 skipped=5 failed=0
+[2000/3136] added=1995 skipped=5 failed=0
+[2050/3136] added=2045 skipped=5 failed=0
+[2100/3136] added=2095 skipped=5 failed=0
+[2150/3136] added=2145 skipped=5 failed=0
+[2200/3136] added=2195 skipped=5 failed=0
+[2250/3136] added=2245 skipped=5 failed=0
+[2300/3136] added=2295 skipped=5 failed=0
+[2350/3136] added=2345 skipped=5 failed=0
+[2400/3136] added=2395 skipped=5 failed=0
+[2450/3136] added=2445 skipped=5 failed=0
+[2500/3136] added=2495 skipped=5 failed=0
+[2550/3136] added=2545 skipped=5 failed=0
+[2600/3136] added=2595 skipped=5 failed=0
+[2650/3136] added=2645 skipped=5 failed=0
+[2700/3136] added=2695 skipped=5 failed=0
+[2750/3136] added=2745 skipped=5 failed=0
+[2800/3136] added=2795 skipped=5 failed=0
+[2850/3136] added=2845 skipped=5 failed=0
+[2900/3136] added=2895 skipped=5 failed=0
+[2950/3136] added=2945 skipped=5 failed=0
+[3000/3136] added=2995 skipped=5 failed=0
+[3050/3136] added=3045 skipped=5 failed=0
+[3100/3136] added=3095 skipped=5 failed=0
+[3136/3136] added=3131 skipped=5 failed=0
+
+Done. added=3131 skipped=5 failed=0
+Output -> analysis\Regularization_scope\io_weight_norms.csv

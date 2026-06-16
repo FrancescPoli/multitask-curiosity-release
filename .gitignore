@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+
+# =============================================================================
+# RESTRICTED DATA — must never enter the public repo. See DATA.md.
+# =============================================================================
+
+# A. Infant foraging — raw trials, demographics, re-identification key (PII).
+#    Only the anonymized release file (and aggregate summaries) is shareable.
+#    All DERIVED infant results (Results/infant_*) were regenerated from the
+#    anonymized release file, so they carry subj_id only and ARE shareable.
+analysis/Cognitive_analysis/Data/Infant_Data/*
+!analysis/Cognitive_analysis/Data/Infant_Data/infant_foraging_release.csv
+!analysis/Cognitive_analysis/Data/Infant_Data/infant_pool_summary.csv
+!analysis/Cognitive_analysis/Data/Infant_Data/infant_datasets_demographics_summary.csv
+
+# B. HCP-derived imaging data (HCP data-use terms restrict redistribution).
+analysis/Network_analysis/Data/Atlases/Schaefer/harmonized_connectomes.mat
+analysis/Network_analysis/Data/Atlases/Schaefer/age.mat
+# per-subject HCP connectomes cached / plotted by pub_conn_matrices.py
+analysis/Final_analyses_and_plots/conn_matrices_cache/schaefer100_hcpya_*.npz
+analysis/Final_analyses_and_plots/Figures/matrix_plots/human_*.png
+
+# -----------------------------------------------------------------------------
+# Deprecated AAL / lifespan atlas blobs — unused (the AAL pipeline scripts were
+# removed). Kept only in this private archive; excluded from clones / public
+# fresh-init seeds so they don't re-enter a public repo.
+analysis/Network_analysis/Data/Atlases/AAL_surface.mat
+analysis/Network_analysis/Data/Atlases/aal90.mat
+analysis/Network_analysis/Data/Atlases/aal90_adult.csv
+analysis/Network_analysis/Data/Atlases/aal_info.m
+analysis/Network_analysis/Data/Atlases/coords.mat
+analysis/Network_analysis/Data/Atlases/1year_coords.mat
+analysis/Network_analysis/Data/Atlases/2year_coords.mat

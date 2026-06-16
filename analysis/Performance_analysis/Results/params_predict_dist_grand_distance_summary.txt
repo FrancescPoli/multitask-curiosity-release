@@ -1,0 +1,79 @@
+Target: grand_distance 
+Prefix: params_predict_dist 
+
+Best Model Formula:
+grand_distance ~ beta_f + alpha_f + temp_f + reg_type_f + reg_value_f + 
+    travel_f + beta_f:alpha_f + beta_f:temp_f + alpha_f:temp_f + 
+    alpha_f:travel_f + temp_f:reg_type_f + temp_f:reg_value_f + 
+    temp_f:travel_f + reg_type_f:reg_value_f + reg_type_f:travel_f + 
+    reg_value_f:travel_f
+<environment: 0x00000221c59c5ff0>
+
+
+Call:
+lm(formula = grand_distance ~ beta_f + alpha_f + temp_f + reg_type_f + 
+    reg_value_f + travel_f + beta_f:alpha_f + beta_f:temp_f + 
+    alpha_f:temp_f + alpha_f:travel_f + temp_f:reg_type_f + temp_f:reg_value_f + 
+    temp_f:travel_f + reg_type_f:reg_value_f + reg_type_f:travel_f + 
+    reg_value_f:travel_f, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.62277 -0.08765 -0.01175  0.07712  0.50503 
+
+Coefficients: (1 not defined because of singularities)
+                                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                       1.022122   0.050269  20.333  < 2e-16 ***
+beta_f0.001                       0.013107   0.034190   0.383 0.701577    
+beta_f0.003                      -0.064366   0.034322  -1.875 0.061205 .  
+alpha_f0.03                      -0.054401   0.036852  -1.476 0.140388    
+alpha_f0.1                       -0.068072   0.037023  -1.839 0.066435 .  
+temp_f0.001                       0.153510   0.061707   2.488 0.013112 *  
+temp_f0.01                        0.348979   0.061760   5.651 2.42e-08 ***
+temp_f1                           0.667210   0.061531  10.844  < 2e-16 ***
+reg_type_fL1                      0.101051   0.031253   3.233 0.001287 ** 
+reg_value_f0.000010               0.077321   0.042070   1.838 0.066541 .  
+reg_value_f0.000100               0.181854   0.037942   4.793 2.05e-06 ***
+travel_f500                      -0.043874   0.044539  -0.985 0.324969    
+beta_f0.001:alpha_f0.03          -0.062852   0.034308  -1.832 0.067422 .  
+beta_f0.003:alpha_f0.03           0.013844   0.034468   0.402 0.688070    
+beta_f0.001:alpha_f0.1           -0.035400   0.034624  -1.022 0.306986    
+beta_f0.003:alpha_f0.1            0.053304   0.034733   1.535 0.125366    
+beta_f0.001:temp_f0.001          -0.013077   0.039842  -0.328 0.742849    
+beta_f0.003:temp_f0.001           0.015227   0.039978   0.381 0.703411    
+beta_f0.001:temp_f0.01            0.031313   0.039898   0.785 0.432842    
+beta_f0.003:temp_f0.01            0.060515   0.040036   1.511 0.131160    
+beta_f0.001:temp_f1               0.010724   0.039335   0.273 0.785221    
+beta_f0.003:temp_f1              -0.077693   0.039639  -1.960 0.050433 .  
+alpha_f0.03:temp_f0.001          -0.075938   0.039812  -1.907 0.056918 .  
+alpha_f0.1:temp_f0.001           -0.044061   0.040112  -1.098 0.272424    
+alpha_f0.03:temp_f0.01           -0.002032   0.039912  -0.051 0.959407    
+alpha_f0.1:temp_f0.01             0.017366   0.040113   0.433 0.665222    
+alpha_f0.03:temp_f1              -0.118121   0.039378  -3.000 0.002809 ** 
+alpha_f0.1:temp_f1               -0.217580   0.039552  -5.501 5.48e-08 ***
+alpha_f0.03:travel_f500           0.090417   0.028257   3.200 0.001444 ** 
+alpha_f0.1:travel_f500            0.077745   0.028456   2.732 0.006469 ** 
+temp_f0.001:reg_type_fL1         -0.178066   0.037329  -4.770 2.29e-06 ***
+temp_f0.01:reg_type_fL1          -0.250085   0.037505  -6.668 5.65e-11 ***
+temp_f1:reg_type_fL1             -0.226589   0.036359  -6.232 8.40e-10 ***
+temp_f0.001:reg_value_f0.000010  -0.058980   0.047113  -1.252 0.211078    
+temp_f0.01:reg_value_f0.000010   -0.220594   0.047147  -4.679 3.53e-06 ***
+temp_f1:reg_value_f0.000010      -0.183807   0.046748  -3.932 9.36e-05 ***
+temp_f0.001:reg_value_f0.000100  -0.110334   0.047313  -2.332 0.020012 *  
+temp_f0.01:reg_value_f0.000100   -0.527396   0.047348 -11.139  < 2e-16 ***
+temp_f1:reg_value_f0.000100      -0.458717   0.047126  -9.734  < 2e-16 ***
+temp_f0.001:travel_f500           0.083788   0.033065   2.534 0.011515 *  
+temp_f0.01:travel_f500            0.093508   0.033192   2.817 0.004996 ** 
+temp_f1:travel_f500               0.060706   0.032366   1.876 0.061163 .  
+reg_type_fL1:reg_value_f0.000010 -0.040482   0.027205  -1.488 0.137237    
+reg_type_fL1:reg_value_f0.000100        NA         NA      NA       NA    
+reg_type_fL1:travel_f500         -0.042927   0.027205  -1.578 0.115086    
+reg_value_f0.000010:travel_f500  -0.055067   0.033468  -1.645 0.100390    
+reg_value_f0.000100:travel_f500  -0.124025   0.033626  -3.688 0.000245 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.1505 on 634 degrees of freedom
+Multiple R-squared:  0.539,	Adjusted R-squared:  0.5063 
+F-statistic: 16.47 on 45 and 634 DF,  p-value: < 2.2e-16
+

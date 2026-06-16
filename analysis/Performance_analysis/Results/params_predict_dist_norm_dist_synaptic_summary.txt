@@ -1,0 +1,70 @@
+Target: norm_dist_synaptic 
+Prefix: params_predict_dist 
+
+Best Model Formula:
+norm_dist_synaptic ~ beta_f + alpha_f + temp_f + reg_type_f + 
+    reg_value_f + travel_f + beta_f:reg_value_f + alpha_f:temp_f + 
+    temp_f:reg_type_f + temp_f:reg_value_f + temp_f:travel_f + 
+    reg_type_f:reg_value_f + reg_type_f:travel_f + reg_value_f:travel_f
+<environment: 0x00000221d3f5ac80>
+
+
+Call:
+lm(formula = norm_dist_synaptic ~ beta_f + alpha_f + temp_f + 
+    reg_type_f + reg_value_f + travel_f + beta_f:reg_value_f + 
+    alpha_f:temp_f + temp_f:reg_type_f + temp_f:reg_value_f + 
+    temp_f:travel_f + reg_type_f:reg_value_f + reg_type_f:travel_f + 
+    reg_value_f:travel_f, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.64092 -0.09585 -0.00802  0.10368  0.57948 
+
+Coefficients: (1 not defined because of singularities)
+                                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                       0.500000   0.061412   8.142 2.03e-15 ***
+beta_f0.001                      -0.013398   0.038398  -0.349 0.727268    
+beta_f0.003                       0.032991   0.038398   0.859 0.390562    
+alpha_f0.03                      -0.065884   0.034788  -1.894 0.058691 .  
+alpha_f0.1                       -0.116992   0.034947  -3.348 0.000863 ***
+temp_f0.001                       0.260741   0.072149   3.614 0.000325 ***
+temp_f0.01                        0.486674   0.072164   6.744 3.44e-11 ***
+temp_f1                           0.493490   0.071785   6.875 1.48e-11 ***
+reg_type_fL1                      0.030325   0.039045   0.777 0.437639    
+reg_value_f0.000010               0.016302   0.059225   0.275 0.783206    
+reg_value_f0.000100               0.377548   0.055299   6.827 2.01e-11 ***
+travel_f500                       0.006648   0.051973   0.128 0.898257    
+beta_f0.001:reg_value_f0.000010  -0.045112   0.046882  -0.962 0.336289    
+beta_f0.003:reg_value_f0.000010  -0.069766   0.047028  -1.483 0.138434    
+beta_f0.001:reg_value_f0.000100  -0.056583   0.048421  -1.169 0.243012    
+beta_f0.003:reg_value_f0.000100  -0.144661   0.048421  -2.988 0.002919 ** 
+alpha_f0.03:temp_f0.001          -0.089467   0.049740  -1.799 0.072534 .  
+alpha_f0.1:temp_f0.001           -0.040222   0.050109  -0.803 0.422443    
+alpha_f0.03:temp_f0.01            0.035658   0.049864   0.715 0.474810    
+alpha_f0.1:temp_f0.01             0.093567   0.050110   1.867 0.062324 .  
+alpha_f0.03:temp_f1               0.062845   0.049201   1.277 0.201957    
+alpha_f0.1:temp_f1                0.117094   0.049420   2.369 0.018113 *  
+temp_f0.001:reg_type_fL1         -0.166332   0.046604  -3.569 0.000385 ***
+temp_f0.01:reg_type_fL1          -0.273784   0.046832  -5.846 8.01e-09 ***
+temp_f1:reg_type_fL1             -0.325947   0.045410  -7.178 1.96e-12 ***
+temp_f0.001:reg_value_f0.000010  -0.075664   0.058858  -1.286 0.199067    
+temp_f0.01:reg_value_f0.000010   -0.205569   0.058902  -3.490 0.000516 ***
+temp_f1:reg_value_f0.000010      -0.245182   0.058395  -4.199 3.06e-05 ***
+temp_f0.001:reg_value_f0.000100  -0.181115   0.059113  -3.064 0.002276 ** 
+temp_f0.01:reg_value_f0.000100   -0.730998   0.059160 -12.356  < 2e-16 ***
+temp_f1:reg_value_f0.000100      -0.750407   0.058885 -12.744  < 2e-16 ***
+temp_f0.001:travel_f500           0.089217   0.041287   2.161 0.031072 *  
+temp_f0.01:travel_f500            0.071586   0.041452   1.727 0.084652 .  
+temp_f1:travel_f500               0.127014   0.040426   3.142 0.001756 ** 
+reg_type_fL1:reg_value_f0.000010  0.090894   0.034023   2.672 0.007742 ** 
+reg_type_fL1:reg_value_f0.000100        NA         NA      NA       NA    
+reg_type_fL1:travel_f500         -0.074147   0.034023  -2.179 0.029670 *  
+reg_value_f0.000010:travel_f500  -0.038327   0.041827  -0.916 0.359848    
+reg_value_f0.000100:travel_f500  -0.196066   0.042022  -4.666 3.74e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.1881 on 642 degrees of freedom
+Multiple R-squared:  0.4946,	Adjusted R-squared:  0.4655 
+F-statistic: 16.98 on 37 and 642 DF,  p-value: < 2.2e-16
+

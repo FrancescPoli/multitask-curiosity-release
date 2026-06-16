@@ -1,0 +1,63 @@
+Target: fraction_solved 
+Prefix: params_predict_perf 
+
+Best Model Formula:
+fraction_solved ~ beta_f + alpha_f + temp_f + reg_type_f + reg_value_f + 
+    travel_f + beta_f:temp_f + alpha_f:temp_f + alpha_f:reg_type_f + 
+    temp_f:reg_type_f + temp_f:travel_f + reg_type_f:reg_value_f
+<environment: 0x00000221c5d57948>
+
+
+Call:
+lm(formula = fraction_solved ~ beta_f + alpha_f + temp_f + reg_type_f + 
+    reg_value_f + travel_f + beta_f:temp_f + alpha_f:temp_f + 
+    alpha_f:reg_type_f + temp_f:reg_type_f + temp_f:travel_f + 
+    reg_type_f:reg_value_f, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.57651 -0.06284 -0.00117  0.05563  0.49705 
+
+Coefficients: (1 not defined because of singularities)
+                                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                       0.135747   0.047694   2.846 0.004565 ** 
+beta_f0.001                       0.100306   0.034371   2.918 0.003641 ** 
+beta_f0.003                       0.185225   0.034646   5.346 1.25e-07 ***
+alpha_f0.03                       0.003718   0.041249   0.090 0.928213    
+alpha_f0.1                        0.121419   0.041622   2.917 0.003655 ** 
+temp_f0.001                       0.178750   0.054453   3.283 0.001084 ** 
+temp_f0.01                        0.899167   0.054530  16.489  < 2e-16 ***
+temp_f1                           0.957106   0.054239  17.646  < 2e-16 ***
+reg_type_fL1                      0.012642   0.040376   0.313 0.754307    
+reg_value_f0.000010              -0.071191   0.033021  -2.156 0.031456 *  
+reg_value_f0.000100              -0.060609   0.021975  -2.758 0.005978 ** 
+travel_f500                       0.271354   0.028293   9.591  < 2e-16 ***
+beta_f0.001:temp_f0.001          -0.032327   0.049285  -0.656 0.512106    
+beta_f0.003:temp_f0.001          -0.075579   0.049477  -1.528 0.127108    
+beta_f0.001:temp_f0.01           -0.086816   0.049373  -1.758 0.079156 .  
+beta_f0.003:temp_f0.01           -0.177290   0.049564  -3.577 0.000374 ***
+beta_f0.001:temp_f1              -0.096127   0.048692  -1.974 0.048787 *  
+beta_f0.003:temp_f1              -0.183834   0.049091  -3.745 0.000197 ***
+alpha_f0.03:temp_f0.001           0.003445   0.049307   0.070 0.944320    
+alpha_f0.1:temp_f0.001           -0.058111   0.049669  -1.170 0.242445    
+alpha_f0.03:temp_f0.01           -0.023406   0.049430  -0.474 0.636004    
+alpha_f0.1:temp_f0.01            -0.190447   0.049669  -3.834 0.000138 ***
+alpha_f0.03:temp_f1              -0.025416   0.048767  -0.521 0.602431    
+alpha_f0.1:temp_f1               -0.186215   0.048983  -3.802 0.000157 ***
+alpha_f0.03:reg_type_fL1          0.038858   0.036288   1.071 0.284651    
+alpha_f0.1:reg_type_fL1           0.101656   0.036646   2.774 0.005696 ** 
+temp_f0.001:reg_type_fL1         -0.032263   0.042361  -0.762 0.446565    
+temp_f0.01:reg_type_fL1          -0.108668   0.042517  -2.556 0.010820 *  
+temp_f1:reg_type_fL1             -0.105828   0.041422  -2.555 0.010850 *  
+temp_f0.001:travel_f500          -0.011109   0.040730  -0.273 0.785143    
+temp_f0.01:travel_f500           -0.229614   0.040834  -5.623 2.79e-08 ***
+temp_f1:travel_f500              -0.274327   0.040047  -6.850 1.72e-11 ***
+reg_type_fL1:reg_value_f0.000010  0.054306   0.032936   1.649 0.099663 .  
+reg_type_fL1:reg_value_f0.000100        NA         NA      NA       NA    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.1865 on 647 degrees of freedom
+Multiple R-squared:  0.7265,	Adjusted R-squared:  0.713 
+F-statistic: 53.71 on 32 and 647 DF,  p-value: < 2.2e-16
+

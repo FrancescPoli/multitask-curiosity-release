@@ -1,0 +1,44 @@
+Target: grand_distance 
+Prefix: perf_predicts_dist 
+
+Best Model Formula:
+grand_distance ~ mean_accuracy + fraction_solved + mean_speed + 
+    switch_rate + entropy + mean_accuracy:fraction_solved + mean_accuracy:mean_speed + 
+    mean_accuracy:switch_rate + fraction_solved:mean_speed + 
+    fraction_solved:entropy + mean_speed:switch_rate + mean_speed:entropy
+<environment: 0x00000221c41fa5c0>
+
+
+Call:
+lm(formula = grand_distance ~ mean_accuracy + fraction_solved + 
+    mean_speed + switch_rate + entropy + mean_accuracy:fraction_solved + 
+    mean_accuracy:mean_speed + mean_accuracy:switch_rate + fraction_solved:mean_speed + 
+    fraction_solved:entropy + mean_speed:switch_rate + mean_speed:entropy, 
+    data = df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.5872 -0.1209  0.0099  0.1135  0.5876 
+
+Coefficients:
+                                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                    1.064e+00  1.365e-01   7.794 2.50e-14 ***
+mean_accuracy                  9.250e-01  3.309e-01   2.795 0.005337 ** 
+fraction_solved               -2.391e+00  4.355e-01  -5.490 5.72e-08 ***
+mean_speed                     1.233e-03  4.054e-04   3.041 0.002452 ** 
+switch_rate                   -4.850e-03  3.680e-03  -1.318 0.187985    
+entropy                       -2.470e-01  6.372e-02  -3.876 0.000117 ***
+mean_accuracy:fraction_solved  1.447e+00  6.647e-01   2.177 0.029825 *  
+mean_accuracy:mean_speed      -2.600e-03  8.794e-04  -2.957 0.003220 ** 
+mean_accuracy:switch_rate      6.291e-03  4.045e-03   1.555 0.120321    
+fraction_solved:mean_speed     5.767e-04  3.255e-04   1.771 0.076953 .  
+fraction_solved:entropy        3.237e-01  1.378e-01   2.350 0.019087 *  
+mean_speed:switch_rate        -1.189e-06  6.548e-07  -1.815 0.069934 .  
+mean_speed:entropy             2.367e-04  1.605e-04   1.474 0.140838    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.1933 on 667 degrees of freedom
+Multiple R-squared:  0.2007,	Adjusted R-squared:  0.1863 
+F-statistic: 13.95 on 12 and 667 DF,  p-value: < 2.2e-16
+

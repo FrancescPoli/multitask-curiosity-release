@@ -1,0 +1,3 @@
+/var/spool/slurm/job3350216/slurm_script: line 32: conda: command not found
+/var/spool/slurm/job3350216/slurm_script: line 33: conda: command not found
+/var/spool/slurm/job3350216/slurm_script: line 50: python: command not found

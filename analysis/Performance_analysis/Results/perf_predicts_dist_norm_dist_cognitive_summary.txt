@@ -1,0 +1,42 @@
+Target: norm_dist_cognitive 
+Prefix: perf_predicts_dist 
+
+Best Model Formula:
+norm_dist_cognitive ~ mean_accuracy + fraction_solved + mean_speed + 
+    switch_rate + entropy + mean_accuracy:fraction_solved + mean_accuracy:mean_speed + 
+    mean_accuracy:entropy + fraction_solved:mean_speed + mean_speed:switch_rate + 
+    mean_speed:entropy
+<environment: 0x00000221d3b26cb8>
+
+
+Call:
+lm(formula = norm_dist_cognitive ~ mean_accuracy + fraction_solved + 
+    mean_speed + switch_rate + entropy + mean_accuracy:fraction_solved + 
+    mean_accuracy:mean_speed + mean_accuracy:entropy + fraction_solved:mean_speed + 
+    mean_speed:switch_rate + mean_speed:entropy, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.34762 -0.18876 -0.05571  0.09234  0.76409 
+
+Coefficients:
+                                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                   -2.782e-01  1.808e-01  -1.539  0.12424    
+mean_accuracy                  1.827e+00  4.432e-01   4.122 4.23e-05 ***
+fraction_solved                5.400e-02  5.460e-01   0.099  0.92125    
+mean_speed                     2.409e-03  5.539e-04   4.349 1.58e-05 ***
+switch_rate                    1.026e-03  9.734e-04   1.054  0.29231    
+entropy                       -5.123e-01  1.299e-01  -3.945 8.83e-05 ***
+mean_accuracy:fraction_solved -1.330e+00  6.644e-01  -2.002  0.04570 *  
+mean_accuracy:mean_speed      -6.595e-03  1.135e-03  -5.809 9.74e-09 ***
+mean_accuracy:entropy          5.318e-01  2.034e-01   2.614  0.00915 ** 
+fraction_solved:mean_speed     2.413e-03  4.734e-04   5.096 4.51e-07 ***
+mean_speed:switch_rate        -1.317e-06  7.946e-07  -1.657  0.09796 .  
+mean_speed:entropy             5.801e-04  1.959e-04   2.961  0.00317 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.2534 on 668 degrees of freedom
+Multiple R-squared:  0.0823,	Adjusted R-squared:  0.06719 
+F-statistic: 5.446 on 11 and 668 DF,  p-value: 2.414e-08
+

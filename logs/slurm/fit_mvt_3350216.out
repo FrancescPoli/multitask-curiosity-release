@@ -1,0 +1,7 @@
+Node:    node-j05
+Pwd:     /imaging/astle/fp02/RNN
+Start:   Wed Apr 15 08:33:46 BST 2026
+Sweep:   /imaging/astle/fp02/logs/sweep/forage_v5.1/forage_v6
+Output:  analysis/Cognitive_analysis/Results/model_mvt_params_fitted.csv
+Python:  
+End:     Wed Apr 15 08:33:46 BST 2026

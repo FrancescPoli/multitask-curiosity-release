@@ -1,0 +1,47 @@
+Target: switch_rate 
+Prefix: params_predict_perf 
+
+Best Model Formula:
+switch_rate ~ alpha_f + temp_f + reg_type_f + reg_value_f + travel_f + 
+    alpha_f:travel_f + temp_f:reg_type_f + temp_f:travel_f + 
+    reg_type_f:travel_f
+<environment: 0x00000221d2510ad0>
+
+
+Call:
+lm(formula = switch_rate ~ alpha_f + temp_f + reg_type_f + reg_value_f + 
+    travel_f + alpha_f:travel_f + temp_f:reg_type_f + temp_f:travel_f + 
+    reg_type_f:travel_f, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-142.123  -13.231    0.131   13.565  115.481 
+
+Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               -8.7434     8.2240  -1.063 0.288095    
+alpha_f0.03               12.9766     5.4143   2.397 0.016819 *  
+alpha_f0.1                26.3902     5.4255   4.864 1.44e-06 ***
+temp_f0.001                7.9829     8.5214   0.937 0.349199    
+temp_f0.01               117.7254     8.5371  13.790  < 2e-16 ***
+temp_f1                  144.4395     8.4405  17.113  < 2e-16 ***
+reg_type_fL1               5.9868     7.4611   0.802 0.422608    
+reg_value_f0.000010       -0.7228     4.6741  -0.155 0.877149    
+reg_value_f0.000100        8.0409     4.6932   1.713 0.087125 .  
+travel_f500               27.1880     8.9618   3.034 0.002510 ** 
+alpha_f0.03:travel_f500   -9.2149     7.9127  -1.165 0.244615    
+alpha_f0.1:travel_f500   -15.8724     7.9660  -1.993 0.046724 *  
+temp_f0.001:reg_type_fL1   0.3066     9.5771   0.032 0.974473    
+temp_f0.01:reg_type_fL1  -12.2458     9.6160  -1.273 0.203295    
+temp_f1:reg_type_fL1     -33.8307     9.3703  -3.610 0.000329 ***
+temp_f0.001:travel_f500    9.0112     9.2107   0.978 0.328265    
+temp_f0.01:travel_f500   -45.1742     9.2366  -4.891 1.26e-06 ***
+temp_f1:travel_f500      -47.4082     9.0595  -5.233 2.24e-07 ***
+reg_type_fL1:travel_f500  10.9934     6.8957   1.594 0.111364    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 42.2 on 661 degrees of freedom
+Multiple R-squared:  0.5742,	Adjusted R-squared:  0.5626 
+F-statistic: 49.51 on 18 and 661 DF,  p-value: < 2.2e-16
+

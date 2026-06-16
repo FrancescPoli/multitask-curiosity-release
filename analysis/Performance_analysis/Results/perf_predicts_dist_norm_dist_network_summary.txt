@@ -1,0 +1,45 @@
+Target: norm_dist_network 
+Prefix: perf_predicts_dist 
+
+Best Model Formula:
+norm_dist_network ~ mean_accuracy + fraction_solved + mean_speed + 
+    switch_rate + entropy + mean_accuracy:fraction_solved + mean_accuracy:switch_rate + 
+    mean_accuracy:entropy + fraction_solved:mean_speed + fraction_solved:switch_rate + 
+    fraction_solved:entropy + mean_speed:entropy + switch_rate:entropy
+<environment: 0x00000221c734d380>
+
+
+Call:
+lm(formula = norm_dist_network ~ mean_accuracy + fraction_solved + 
+    mean_speed + switch_rate + entropy + mean_accuracy:fraction_solved + 
+    mean_accuracy:switch_rate + mean_accuracy:entropy + fraction_solved:mean_speed + 
+    fraction_solved:switch_rate + fraction_solved:entropy + mean_speed:entropy + 
+    switch_rate:entropy, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.30186 -0.06799  0.01121  0.07684  0.21026 
+
+Coefficients:
+                                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)                    7.060e-01  6.889e-02  10.248  < 2e-16 ***
+mean_accuracy                  2.502e-01  1.548e-01   1.617 0.106449    
+fraction_solved               -1.191e+00  2.133e-01  -5.583 3.45e-08 ***
+mean_speed                     1.706e-04  1.239e-04   1.378 0.168796    
+switch_rate                   -9.354e-03  3.180e-03  -2.942 0.003379 ** 
+entropy                        2.231e-01  6.467e-02   3.450 0.000596 ***
+mean_accuracy:fraction_solved  5.212e-01  3.590e-01   1.452 0.146961    
+mean_accuracy:switch_rate      2.250e-02  6.238e-03   3.607 0.000332 ***
+mean_accuracy:entropy         -3.216e-01  1.318e-01  -2.440 0.014966 *  
+fraction_solved:mean_speed     4.654e-04  1.931e-04   2.410 0.016213 *  
+fraction_solved:switch_rate   -5.983e-03  2.522e-03  -2.372 0.017959 *  
+fraction_solved:entropy        3.143e-01  1.124e-01   2.797 0.005299 ** 
+mean_speed:entropy            -2.252e-04  8.601e-05  -2.618 0.009035 ** 
+switch_rate:entropy           -2.170e-03  1.249e-03  -1.737 0.082848 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.1033 on 666 degrees of freedom
+Multiple R-squared:  0.2676,	Adjusted R-squared:  0.2533 
+F-statistic: 18.72 on 13 and 666 DF,  p-value: < 2.2e-16
+

@@ -1,0 +1,4 @@
+dataset,initial_n,final_n,n_with_demographics,age_mean_months,age_sd_months,age_mean_days,age_sd_days,n_male,n_female,source,notes
+Roris_smiley,83,72,63,7.9523809523809526,0.8314109932105399,255.1904761904762,23.484282419042042,33,30,NA,9 of 72 infants in the per-trial data lack demographic records
+Roris_nostd,90,73,73,8.02,NA,NA,11.37,39,34,"Poli et al. (2024), Open Mind: 'Eight-Month-Old Infants Meta-Learn by Downweighting Irrelevant Evidence'","17 excluded for completing <20 trials in at least two sequences; 50 of 73 are re-analysed from Poli et al. (2020), 40 are new data"
+MPI,NA,130,NA,NA,NA,NA,NA,NA,NA,NA,Provisional N; demographics and source publication not yet supplied

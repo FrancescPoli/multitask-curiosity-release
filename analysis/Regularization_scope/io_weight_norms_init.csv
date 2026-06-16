@@ -1,0 +1,2 @@
+source_run,w_in_l1_sum,w_in_l0,w_rec_l1_sum,w_rec_l0,w_out_l1_sum,w_out_l0
+run_000_l1-1e-06_beta0.0001_alpha0.01_trav50_blk1_temp0.0001,918.1492919921875,13300,399.6741027832031,9999,189.54656982421875,1699

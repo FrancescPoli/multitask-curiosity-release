@@ -1,0 +1,347 @@
+---
+title: "Materials and Methods"
+format:
+  docx:
+    number-sections: true
+    toc: false
+---
+
+# Materials and Methods
+
+The Methods are organized into three parts. We first describe the **infant foraging task**: the sample, the experimental paradigm, the behavioral measure, and the marginal value theorem (MVT) analysis we use to characterize infants' decisions to disengage from a stimulus. The MVT framework that emerges from the infant analysis is then incorporated as the curriculum controller of the network we describe next. The **model** section accordingly presents the architecture and training pipeline of the recurrent neural network, with MVT built in as its curriculum controller. Finally, the **analyses** section describes how we link the trained networks to brain structure and cognitive functioning.
+
+## Infant foraging task
+
+**Participants.** We pooled behavioral data from existing, previously published datasets and from a new data collection. For the existing data, infants were drawn from the samples reported in Poli et al. (2020), Poli et al. (2024) and Scatolin et al. (2025). A total of $N = 173$ infants were initially recruited across these studies. After excluding 28 participants due to fussiness or technical error, a final $N = 145$ were retained (mean age = $8.19$ months, SD $= 0.62$ months, Female = 47%). For the new data, infants were recruited at the Max Planck Institute for Human Cognitive and Brain Sciences. $N = 131$ infants were tested, of whom $N = 130$ were retained after the exclusion of one participant due to a technical error (mean age $= 12.64$ months, SD $= 1.88$ months, Female $= 52$%).
+
+**Apparatus and procedure.** Infants were tested in a silent room with fixed light levels. Infants either sat in a baby seat held by the caregiver on their lap or directly on the caregiver's lap, with their eyes approximately $60$ cm from the screen. Looking behavior was monitored simultaneously with either a Tobii X300 eye-tracker or Tobii X120, always combined with a video camera. Parents were instructed not to interact with their child unless the child explicitly sought their attention, and, in that case, not to try to redirect the child's attention to the screen. Look-away events were coded from the video data using BORIS software.
+
+**Visual learning task.** Infants were presented with a visual learning task (Poli et al., 2020) consisting of $16$ sequences of cue–target trials. On each trial, a cue, a simple shape, appeared in the middle of the screen and was followed by a target, the same shape, at one of four quadrant locations around the cue. The shape was constant within a sequence and changed between sequences. Within each sequence, the target was more likely to appear at one specific location than at the other three; across the $16$ sequences, the high-likelihood location received the target with probability $1.0$ in $4$ sequences, $0.8$ in $6$ sequences, and $0.6$ in $6$ sequences. The order of the $16$ sequences was fixed across participants. A sequence contained at most $15$ cue–target trials and terminated either when the infant had completed all $15$ trials or when the infant looked away from the screen for at least one continuous second; in the latter case, the next sequence began as soon as the infant returned their gaze to the screen. The experiment ended when the infant had watched all $16$ sequences or became fussy.
+
+**Look-away measure.** For each target presentation we recorded a binary look-away event indicating whether the infant continued to attend to the screen or instead disengaged from it within the following $4$ s (i.e., before the start of the next trial). We treat this event as an index of the infant's current interest in the ongoing sequence (Kidd & Hayden, 2015): because the testing setting contained no external distractors competing for the infant's attention, a look-away reflects a self-initiated, active decision to stop engaging with the task (cf. Kidd et al., 2012).
+
+**Computational Modeling.** We modeled infants' decisions to look away as foraging decisions under the Marginal Value Theorem (MVT; Charnov, 1976). While MVT was originally formulated in behavioral ecology – to capture the principle that an animal abandons a depleting food patch when its local return falls below the average return available in the environment – its logic extends naturally to any setting in which an agent must allocate time across discrete sources of value. Here, we treat each sequence as a *patch* in which the infant harvests *learning progress*, and treat look-aways as decisions to leave the current patch in favor of another one. Curiosity can therefore be operationalized as an intrinsic reward towards learning progress: the more a sequence is still teaching the infant something, the higher its instantaneous "value", and the longer the MVT-driven agent should stay on it.
+
+For each trial we therefore computed the *learning progress* (LP) that the trial offered to an ideal observer of the target locations, following Poli et al. (2020). The observer keeps track of how often the target has appeared at each of the four quadrants since the start of the current sequence, with a uniform Dirichlet prior:
+
+$$p_i^{t} = \frac{n_i^{t} + \alpha}{t + 4\alpha},$$ {#eq-posterior}
+
+where $p_i^{t}$ is the estimated probability that the next target lands in quadrant $i$ after the first $t$ trials of the sequence, which gets updated on every trial after stimulus presentation; $n_i^{t}$ is the number of times quadrant $i$ has been the target so far, and $\alpha$ is a pseudo-count expressing the strength of the prior. The learning progress contributed by trial $t$ is then defined as the Kullback–Leibler divergence between the observer's posterior after the trial and its posterior just before it:
+
+$$D_t = D_{\text{KL}}\!\left(\mathbf{p}^{t} \,\|\, \mathbf{p}^{t-1}\right) = \sum_{i=1}^{4} p_i^{t} \log \frac{p_i^{t}}{p_i^{t-1}},$$ {#eq-lp}
+
+which captures how much the trial updated the observer's beliefs about where the target tends to appear and is therefore taken as the amount of LP the infant could in principle extract from it. The full motivation, the chosen value of $\alpha$, and the supporting analyses are given in Poli et al. (2020), to which we refer the reader for further detail.
+
+Given this definition of value, MVT can be implemented by maintaining a moving estimate of the local return on the current patch and comparing it to a moving estimate of the global return rate across the whole session. We track these two estimates with exponential moving averages (EMAs) of the per-trial LP signal $D_t$ defined in @eq-lp,
+
+$$P_{t} = (1 - \alpha_{\text{local}})\,P_{t-1} + \alpha_{\text{local}}\,D_t, \qquad \rho_{t} = (1 - \beta_{\text{global}})\,\rho_{t-1} + \beta_{\text{global}}\,D_t,$$ {#eq-ema}
+
+with $P_0 = \rho_0 = 0$. The *local* estimate $P_t$ is updated at the fast rate $\alpha_{\text{local}}$, so it is dominated by the most recent trials and effectively reflects the current LP-related reward value; the *global* estimate $\rho_t$ is updated at the slower rate $\beta_{\text{global}}$ and reflects the long-run average reward value. We parameterize the two rates by their *half-lives* – $\alpha_{\text{hl}} = \log 2 / \alpha_{\text{local}}$ and $\beta_{\text{hl}} = \log 2 / \beta_{\text{global}}$ – defined as the number of past trials after which the weight of an observation in the EMA has decayed to half its initial value.
+
+The MVT signal at trial $t$ is the difference between the local and global estimates, $X_t = P_t - \rho_t$. Positive values indicate that the current sequence is yielding more learning progress than the running global average; negative values indicate that it has dropped below the global baseline, which is the regime in which an MVT-driven forager is predicted to leave.
+
+**Analysis.** We tested whether infants' look-aways follow the MVT prediction by fitting a mixed-effects logistic regression of the look-away event on the MVT signal, pooling across the full sample with a random intercept by subject:
+
+$$\Pr(\text{leave}_t) = \mathrm{sigmoid}\!\left(b_0 + b_1 X_t\right) \;+\; (1 \mid \text{subject}).$$ {#eq-glm}
+
+The free parameters of the framework are the EMA half-lives $\alpha_{\text{hl}}$ and $\beta_{\text{hl}}$ that determine $P_t$ and $\rho_t$. We recovered them by grid search: for each integer pair $\alpha_{\text{hl}} \in \{1, \dots, 10\}$ trials and $\beta_{\text{hl}} \in \{1, \dots, 20\}$ trials (constrained so that the global half-life is at least as long as the local one), we recomputed $P_t, \rho_t, X_t$ and fitted a GLMER; the pair minimizing AIC was taken as the best fit. The MVT prediction is then assessed from the sign of the fixed effect $b_1$: a negative coefficient indicates that the probability of leaving decreases with the MVT signal, consistent with the theory. The subject random intercept absorbs idiosyncratic baselines, so all infants, including those who happened to look away very few times, contribute to the shared fixed effect. We additionally fit a control mixed-effects model that augments the predictor set with the within-sequence and within-subject trial indices, so as to absorb pure time-on-task effects unrelated to the MVT signal.
+
+Finally, we compared our MVT model against two alternative theoretical accounts of disengagement that have been proposed in the developmental and curiosity literatures (Kidd et al., 2012; Poli et al., 2020). The first, a plain learning-progress account, predicts that infants leave when the current trial offers little learning progress, regardless of any baseline (Poli et al., 2020); we operationalized this as $\mathrm{event}_t \sim D_t + (1 \mid \text{subject})$, with $D_t$ the per-trial LP. The second, a *Goldilocks* account (Kidd et al., 2012), predicts that infants engage with moderately surprising stimuli, producing an inverted-U on surprise $I_t$ (the surprisal of the trial under the ideal observer's pre-trial posterior); we operationalized this as $\mathrm{event}_t \sim \mathrm{poly}(I_t, 2) + (1 \mid \text{subject})$. Both alternatives were fit on the same trials and the same random-intercept structure as the MVT model. Because the MVT model also selects $(\alpha_{\text{hl}}, \beta_{\text{hl}})$ from a grid, we additionally report a corrected AIC that adds $2 \cdot 2 = 4$ units to MVT's raw AIC (and the corresponding $2\log n$ correction to BIC), treating the two grid-searched hyperparameters as additional model parameters.
+
+**Results.** The grid search selected a local half-life of $1$ trial and a global half-life of $4$ trials. At this optimum the probability of leaving fell steeply with the MVT signal: across the pooled sample ($18{,}225$ look-away decisions from $275$ infants) the fixed effect of $X_t$ was strongly negative ($\beta = -0.80$, $SE = 0.03$, $z = -25.1$, $p < 0.001$), the direction predicted by the theory: infants disengage once local learning progress falls below the running global baseline. The effect held in the control model that also absorbed within-sequence and within-subject trial position ($\beta_X = -0.72$, $SE = 0.03$, $z = -20.7$, $p < 0.001$), so it is not reducible to a simple decline with time on task (within-subject index $\beta = 0.50$, $SE = 0.04$, $z = 12.8$, $p < 0.001$; within-sequence index $\beta = 0.11$, $SE = 0.03$, $z = 3.1$, $p = 0.002$).
+
+The MVT account also clearly outperformed both alternatives, achieving the lowest AIC and BIC: it beat the plain learning-progress model by $\Delta\text{AIC} = 418$ and the quadratic-surprise ("Goldilocks") model by $\Delta\text{AIC} = 700$, and its advantage persisted after penalizing the two grid-searched half-lives ($\Delta\text{AIC} \geq 414$, $\Delta\text{BIC} \geq 398$ against both).
+
+## Recurrent Neural Networks
+
+The network we train is a recurrent neural network with the MVT controller introduced above built directly into its training schedule, so that the order in which the model practices its tasks is decided online by the same kind of foraging rule we fitted to infants. The architecture and training pipeline are described in the following subsections.
+
+## Network architecture
+
+Our network builds on the multi-task recurrent architecture introduced by Yang et al. (2019) and adopts the unified categorical readout used by Khona et al. (2023), while differing from both in the choice of training objective, regularization, and training curriculum (described in the following sections). It consists of a single hidden layer of $N = 100$ leaky-integrator units with rectified linear (ReLU) activation, which receive a structured task input at every timestep and project, through a linear readout followed by a softmax, onto a discrete action space. At each timestep the input vector and the recurrent state are concatenated and enter the hidden layer through a single shared weight matrix, so that sensory and task-identifying channels are integrated with the recurrent state through the same set of trainable connections.
+
+## Recurrent dynamics
+
+Hidden activity $\mathbf{h}_t \in \mathbb{R}^{N}$ evolves according to an Euler-discretized leaky-integrator equation:
+
+$$\mathbf{h}_{t+1} = (1-\alpha)\,\mathbf{h}_t \;+\; \alpha\, f\!\left(\mathbf{W}\,[\,\mathbf{x}_t;\,\mathbf{h}_t\,] + \mathbf{b} + \boldsymbol{\xi}_t^{\text{rec}}\right),$$ {#eq-dynamics}
+
+where $\mathbf{x}_t$ is the input vector at time $t$, $[\,\cdot\,;\,\cdot\,]$ denotes concatenation, $\mathbf{W}$ collects the fused input-to-hidden and recurrent weights, $\mathbf{b}$ is a bias vector, and $f$ is the elementwise ReLU nonlinearity. The leak coefficient is set by the ratio of the discretization step to the membrane time constant, $\alpha = \Delta t / \tau_m$. We use $\Delta t = 20$ ms and $\tau_m = 100$ ms, giving $\alpha = 0.2$. The hidden state is reset to $\mathbf{h}_0 = \mathbf{0}$ at the start of every trial.
+
+Two independent sources of zero-mean Gaussian noise are injected during training. The first, $\boldsymbol{\xi}_t^{\text{rec}}$ in @eq-dynamics, acts directly on the pre-activation of each recurrent unit and is intended to capture the intrinsic stochasticity of biological neurons. The second is added to the input vector $\mathbf{x}_t$ before it enters the recurrent map and represents perceptual uncertainty at the sensory boundary, mimicking unreliable observations and inter-trial variability in the signals the network is exposed to. The two noise sources have standard deviations $\sigma_{\text{rec}}\sqrt{2/\alpha}$ and $\sigma_x\sqrt{2/\alpha}$, with $\sigma_{\text{rec}} = 0.05$ and $\sigma_x = 0.01$. The $\sqrt{2/\alpha}$ scaling ensures that the effective noise variance at the membrane level is preserved across choices of $\Delta t$ (Yang et al., 2019). Both noise sources are disabled at evaluation time, so any stochasticity in the model's behavior at test reflects only the noise it experienced during training.
+
+## Input
+
+The input vector $\mathbf{x}_t$ presented to the network at each timestep is the concatenation of three functional blocks: a fixation cue, sensory channels carrying the current stimulus, and a static task-identifying signal. The total input has $133$ dimensions ($1$ fixation channel, $32$ sensory channels and $100$ task-identifying channels), and all three blocks enter the hidden layer through the same shared weight matrix introduced above.
+
+**Fixation cue.** A single binary-valued channel encodes a fixation cue. It is set to $1$ during the periods of the trial in which the network is required to maintain fixation – typically the fixation, stimulus and (when present) delay periods – and switches to $0$ once the network is allowed to commit a motor response. The exact mapping between trial periods and the cue's value differs slightly across task variants, as described later.
+
+**Sensory channels.** The current stimulus is encoded across two rings of $16$ directional channels each, for a total of $32$ sensory channels. Each of the $16$ channels is assigned a direction it responds most strongly to, with the preferred directions equally spaced around the circle. A channel fires not only at its preferred direction but with declining strength as the stimulus moves away from it. A single stimulus therefore activates the closest channel plus a few of its neighbors, with smoothly graded magnitudes.
+
+Concretely, for a stimulus at orientation $\theta$ the activity of the $k$-th channel in a ring is
+
+$$s_k = 0.8 \cdot \exp\!\left(-\frac{1}{2}\left(\frac{d(\theta_k,\,\theta)}{\pi/8}\right)^2\right),$$ {#eq-bump}
+
+where $\theta_k = 2\pi k / 16$ for $k = 0,\dots,15$ indicates the $16$ equally spaced positions on the ring, $\theta_k$ indicates the preferred direction of channel $k$, and the declining strength of response is captured by the Gaussian envelope with width $\pi/8$, which matches one inter-channel spacing. The angular distance $d(\theta_k,\theta)$ between the channel's preferred direction and the stimulus is the periodic distance on the circle.
+
+**Task-identifying channels.** In the original Yang et al. (2019) multi-task RNN, the task to be executed on each trial was signaled to the network through a one-hot rule input: a vector with as many channels as tasks, in which exactly one channel was set to $1$ and all others to $0$. Khona et al. (2023) showed that this scheme biases the network toward a degenerate solution in which the multi-task battery is solved largely through *autapses*, i.e., strong recurrent self-connections: with a private input dimension per task, the network can simply learn task-specific units that are driven by their dedicated rule channel and need only maintain their own activity to produce the correct output, with little genuine inter-unit recurrent processing. This bypasses the computational role of the recurrent layer and prevents the emergence of a shared representational substrate across tasks.
+
+We instead use a dense, distributed rule code, designed so that the task-identifying input is necessarily ambiguous. Each task is assigned a vector that is drawn at random in a low-dimensional latent space – four dimensions – and then projected up to the $100$ input channels through a fixed random map. Because $20$ vectors cannot be packed orthogonally into a space of only $4$ dimensions, the task vectors necessarily overlap, with an expected absolute cosine similarity of roughly $1/\sqrt{4} = 0.5$ between any two of them. Which tasks happen to overlap more or less is set entirely by the random draw. The random rule geometry therefore carries no information about task structure: that structure must be discovered by the network from the loss alone.
+
+When the network receives the rule vector for a given task, the input drive partially overlaps with the drive that would be produced by the rule vectors of several other, unrelated tasks, and the corresponding subsets of hidden units are co-activated even though only one task is the actual target. Hence, the network must use its recurrent connectivity to perform pattern separation, leveraging lateral inhibition and other forms of inter-unit coupling to suppress the interfering task signals and amplify the target one. The autaptic solution becomes prohibitively expensive, and the network is pushed toward genuinely recurrent, distributed computation in which units are reused across tasks.
+
+Concretely, the rule vector $\mathbf{r}^{(k)}$ for task $k$ is constructed in two stages. First, a $4$-dimensional latent $\mathbf{z}^{(k)}$ is drawn from a standard Gaussian and renormalized to unit length. Second, it is projected to $100$ dimensions through a fixed random Gaussian matrix $\mathbf{P} \in \mathbb{R}^{4 \times 100}$ (each entry sampled iid from $\mathcal{N}(0,1)$), and the resulting $100$-dimensional vector is again renormalized to unit length:
+
+$$\mathbf{r}^{(k)} = \frac{\mathbf{P}^{\top}\mathbf{z}^{(k)}}{\bigl\|\mathbf{P}^{\top}\mathbf{z}^{(k)}\bigr\|}.$$ {#eq-rule}
+
+Each task is associated with a single rule vector. Both $\mathbf{P}$ and the set of latents $\{\mathbf{z}^{(k)}\}$ are drawn once at the start of training using a fixed seed, held constant thereafter, and not optimized during training.
+
+## Initialization
+
+All trainable parameters of the recurrent layer are initialized once, under the same random seed that governs the rule-vector projection. Input weights (rows of $\mathbf{W}$ in @eq-dynamics acting on $\mathbf{x}_t$) are drawn independently from a zero-mean Gaussian with variance $1/n_{\text{input}}$, so that the variance of the total input drive to each unit is of order one. Recurrent weights (rows acting on $\mathbf{h}_t$) are initialized as a random orthogonal matrix (Saxe et al., 2014) rescaled so that the spectral radius of the recurrent map is $0.5$, keeping the network in a sub-critical regime in which spontaneous activity decays in the absence of input. Biases are initialized to zero.
+
+## Readout
+
+At each timestep the hidden state $\mathbf{h}_t$ is mapped, through a linear projection followed by a softmax, to a probability distribution over a discrete action space of $17$ classes: one *fixation* class, corresponding to the network withholding a motor response, and $16$ *direction* classes, one for each of the ring directions used in the sensory input. Concretely,
+
+$$\mathbf{l}_t = \mathbf{W}_{\text{out}}\,\mathbf{h}_t + \mathbf{b}_{\text{out}}, \qquad \mathbf{p}_t = \mathrm{softmax}(\mathbf{l}_t),$$ {#eq-readout}
+
+with $\mathbf{W}_{\text{out}} \in \mathbb{R}^{17 \times N}$ initialized by Xavier-uniform sampling and $\mathbf{b}_{\text{out}} \in \mathbb{R}^{17}$ initialized to zero. The readout is applied at every timestep of the trial, so the network produces a class distribution throughout the trial and can be supervised against the target action at every step.
+
+## Loss function
+
+Training minimizes a composite loss combining a temporally weighted supervised term on the readout with a single weight-regularization term, the latter chosen across runs to lie in one of two regimes.
+
+**Supervised term.** At every timestep, the categorical distribution $\mathbf{p}_t$ produced by the readout is supervised against the target action $y_t \in \{0,1,\dots,16\}$ provided by the task generator. We follow the temporal-weighting scheme of Yang et al. (2019): the per-trial loss is
+
+$$\mathcal{L}_{\text{CE}} = \frac{1}{|\mathcal{V}|}\sum_{t \in \mathcal{V}} w_t \,\mathrm{CE}\!\bigl(\mathbf{p}_t,\,y_t\bigr), \qquad w_t = \begin{cases} 5 & \text{if } y_t \in \{1,\dots,16\} \\ 1 & \text{if } y_t = 0 \end{cases}$$ {#eq-loss}
+
+where $\mathrm{CE}(\mathbf{p}_t, y_t) = -\log p_{t,y_t}$ is the categorical cross-entropy at frame $t$ and $\mathcal{V}$ is the set of frames at which a target action is defined (padding frames inserted to align trial lengths within a batch are excluded). Response frames, those at which the target is one of the $16$ direction classes, therefore contribute five times as much to the loss as fixation frames; this prevents the loss from being dominated by the typically long fixation periods, over which the readout target is the same class at every frame.
+
+**Regularization.** A single weight-regularization term $\mathcal{R}$ is added to the supervised loss, so that the total optimized in a given run is $\mathcal{L} = \mathcal{L}_{\text{CE}} + \mathcal{R}$. We consider two regimes:
+
+*L1.* An $\ell_1$ penalty applied uniformly across all trainable weights:
+
+$$\mathcal{R}_{\text{L1}} = \lambda_{\text{L1}} \sum_{\theta \in \Theta_{\text{w}}} |\theta|,$$ {#eq-l1}
+
+where $\Theta_{\text{w}}$ collects the entries of $\mathbf{W}$ (both input and recurrent blocks) and of $\mathbf{W}_{\text{out}}$; biases, being one-dimensional, are excluded. This regime applies a uniform pressure toward sparsity throughout the network.
+
+*Distance-weighted recurrent penalty.* An $\ell_1$ penalty applied only to the recurrent weights, with each weight multiplied by a fixed cost that grows with the spatial distance between the two units it connects:
+
+$$\mathcal{R}_{\text{dist}} = \lambda_{\text{dist}} \sum_{i,j=1}^{N} |W^{\text{rec}}_{ij}|\, D_{ij}^{2},$$ {#eq-dist}
+
+where $W^{\text{rec}}_{ij}$ is the recurrent weight from unit $j$ to unit $i$. To assign distances to the units, we identify the $N = 100$ hidden units with the $100$ cortical parcels of the Schaefer-100 atlas (Schaefer et al., 2018) and take $D_{ij}$ to be the Euclidean distance between the centroids of parcels $i$ and $j$, normalized so that $\max_{i,j} D_{ij} = 1$. The squared exponent makes the cost grow rapidly with distance, encouraging the recurrent connectivity to remain spatially local in a way reminiscent of the distance-dependent wiring cost observed in cortex (Ercsey-Ravasz et al., 2013).
+
+## Optimization
+
+The composite loss is minimized by stochastic gradient descent with Adam (Kingma & Ba, 2015) at a learning rate of $1 \times 10^{-3}$. At each step, a batch of $16$ independent trials is drawn from the task currently selected by the curriculum (described below), and a single gradient update is performed. To prevent rare large gradients from destabilizing the recurrent dynamics, gradients are clipped element-wise to $[-1, +1]$ before the optimizer step. Training consisted of a total of $6 \times 10^{5}$ gradient updates.
+
+## Tasks
+
+The network is trained on a battery of $20$ cognitive tasks adapted from the multi-task suite of Yang et al. (2019). All $20$ tasks share the same input format, action space and temporal structure, but differ in the rules that map sensory input to the correct response. They are organized into three behavioral families – *reaching*, *perceptual decision-making* and *delayed match-to-sample* – and parameterized by a small set of modifiers, or primitives (`anti`, `ctx`, `dly`, `rt`, `multi`, `cat`, `nms`), which combine to generate the variants within each family.
+
+**Trial structure.** Every trial unfolds over four sequential periods, presented to the network as consecutive timesteps of $\Delta t = 20$ ms:
+
+1.  **Fixation period**: $300$–$700$ ms, drawn uniformly per trial. The fixation cue is set to $1$, both sensory rings are silent, and the correct action is the *fixation* class.
+2.  **Stimulus period**: $500$–$1500$ ms uniform (split into separate *sample* and *test* sub-periods of $200$–$600$ ms each in match and delayed-decision tasks). One or two Gaussian bumps are presented on the sensory rings, as required by the task.
+3.  **Optional delay period**: $500$ ms in the reaching family; $200$–$1600$ ms (drawn from $\{200, 400, 800, 1600\}$) in match and delayed-decision tasks. The fixation cue remains $1$, both rings are silent, and the correct action is still *fixation*. This period is absent in tasks without an explicit delay modifier.
+4.  **Response period**: $500$ ms. The fixation cue switches to $0$ and the correct action becomes one of the $16$ direction classes, determined by the task rule below.
+
+Period durations are resampled independently on every trial. Each batch element is a fresh, independent trial starting from a zero hidden state, so the network never carries state from one trial to the next.
+
+**Reaching family (**$10$ **tasks).** A single Gaussian-bump stimulus is presented at orientation $\theta$, and the network must respond at the matching direction during the response period. In tasks without the context modifier, the stimulus is placed on either ring 1 or ring 2 with equal probability per trial, so the network must learn to extract direction independently of which ring carries the signal. Four binary modifiers generate the ten reaching variants:
+
+- **`anti`**: the correct response is rotated by $\pi$ (the network must reach in the direction opposite to the stimulus).
+- **`ctx`** (context / selective attention): two stimuli are presented simultaneously, one on each ring; the network must respond to the stimulus on ring 1 (the target) and ignore the stimulus on ring 2 (the distractor).
+- **`dly`** (delay): a delay period is inserted between stimulus offset and response; the network must hold the stimulus direction in working memory across a stimulus-free interval before committing.
+- **`rt`** (reaction time): the fixation cue drops at stimulus onset and the response is read out continuously from the stimulus period onward, rather than waiting for a fixed response window.
+
+The ten reaching tasks correspond to the combinations actually used in our battery: `go`, `rtgo`, `dlygo`, `antigo`, `ctxgo`, `dlyantigo`, `dlyctxgo`, `antictxgo`, `dlyantictxgo`, `rtantictxgo`.
+
+**Perceptual decision-making family (**$6$ **tasks).** Two Gaussian-bump stimuli are presented at opposite orientations with different *coherences* (effective contrasts) $c_1$ and $c_2$, drawn so that $c_1 + c_2 = 1$ and $|c_1 - c_2| \in \{0.08, 0.16, 0.32\}$ per trial; smaller differences make the trial more ambiguous. The "winner" is the more coherent of the two stimuli, and the correct response is its direction. Stimulus channels are additionally corrupted by zero-mean Gaussian noise during the stimulus period, so coherence sets the per-frame signal-to-noise ratio that the network must integrate over time (Yang et al., 2019). Four modifiers generate the six decision-making variants:
+
+- **`dm1` / `dm2`**: the two stimuli are presented on ring 1 only (`dm1`) or ring 2 only (`dm2`).
+- **`multidm`**: the stimuli are presented redundantly on both rings; the network must combine evidence across modalities.
+- **`dly`**: a delay separates a brief *sample* presentation from a *test* presentation, requiring the network to integrate evidence across the delay rather than within a single stimulus.
+- **`anti`**: the target is rotated by $\pi$, as in the reaching family.
+
+The six tasks are: `dm1`, `dm2`, `multidm`, `dlydm1`, `antidm1`, `antidlydm1`.
+
+**Delayed match-to-sample family (**$4$ **tasks)**. A *sample* stimulus at orientation $\theta_s$ is presented, then a delay, then a *test* stimulus at orientation $\theta_t$. The network must commit to the *test* direction if a task-specific match condition is satisfied, and otherwise maintain fixation throughout the response period. The trial type ("match" vs. "non-match") is drawn with equal probability per trial. Two binary modifiers generate the four variants:
+
+- **`ms` / `nms`**: under `ms` (match-go) the network responds at $\theta_t$ when $\theta_t = \theta_s$; under `nms` (non-match-go) the network responds at $\theta_t$ when $\theta_t \neq \theta_s$. In the complementary condition (no-go), the correct action is fixation.
+- **`cat`** (category match): the match condition is relaxed from exact identity to same-hemisphere: $\theta_s$ and $\theta_t$ are considered to match if they both fall in the upper half-circle $(0, \pi]$ or both in the lower half-circle $(\pi, 2\pi]$. This requires the network to learn an abstract categorization rule rather than an exact sample–test identity rule.
+
+All four match tasks include a delay between sample and test: `dlyms`, `dlynms`, `catdlyms`, `catdlynms`.
+
+## Foraging curriculum
+
+Rather than interleaving tasks randomly during training, as is standard in the multi-task RNN literature, we let the order in which the network practices tasks be decided online by an MVT controller. We describe the controller's three ingredients in turn: the per-step measure of learning progress, the moving averages that summarize it, and the stay/leave decision rule.
+
+**Learning progress.** At every gradient update on the current task $k$, the controller is given a scalar reward equal to the *learning progress* on that task, defined as the per-step reduction in the response-period cross-entropy:
+
+$$r_t = \mathrm{CE}^{\text{dec}}_{t-1}(k) - \mathrm{CE}^{\text{dec}}_{t}(k),$$ {#eq-progress}
+
+where $\mathrm{CE}^{\text{dec}}_{t}(k)$ is the cross-entropy of the readout averaged across the response-period frames of the batch at update $t$ on task $k$. Positive $r_t$ means the loss has dropped (the network is improving on the task); negative $r_t$ means it has risen. On the first visit to a task, $\mathrm{CE}^{\text{dec}}_{t-1}(k)$ is undefined and $r_t$ is set to zero. The raw reward is then passed through an asymmetric, prospect-theory–inspired value function before being handed to the controller,
+
+$$v(r_t) = \begin{cases} \tanh\!\left(r_t / \sigma\right) & \text{if } r_t \geq 0, \\ \lambda \cdot \tanh\!\left(r_t / \sigma\right) & \text{if } r_t < 0, \end{cases}$$ {#eq-value}
+
+with $\sigma = 0.1$ controlling the width of the linear regime and $\lambda = 2.25$ amplifying the magnitude of losses relative to gains, consistent with prospect-theoretic accounts of decision-making under uncertainty (Kahneman & Tversky, 1979).
+
+**Local and global progress.** Two exponential moving averages of the subjective reward $v(r_t)$ are then maintained at rates $\alpha_{\text{local}}$ and $\beta_{\text{global}}$, exactly as in @eq-ema: a local estimate $P_t$ dominated by recent steps, and a global estimate $\rho_t$ that tracks the long-run reward rate across the whole training run.
+
+**Decision rule.** At every training step the controller commits to staying on the current task or leaving for a different one, drawing a stochastic decision from a soft version of the MVT rule:
+
+$$\Pr(\text{stay}) = \sigma\!\left(\frac{P_t - \rho_t - \varepsilon}{\tau}\right),$$ {#eq-stay}
+
+where $\sigma(\cdot)$ is the logistic function, $\tau$ is a decision temperature and $\varepsilon$ is a leave margin. Regulating $\tau$ lets us continuously degrade the curiosity-driven preference encoded by the MVT signal: in the limit $\tau \to 0$ the rule becomes the deterministic MVT comparison (stay iff $P_t > \rho_t + \varepsilon$), so the controller is fully driven by learning progress; in the limit $\tau \to \infty$ the rule converges to a constant $\Pr(\text{stay}) = 0.5$, so the controller picks tasks essentially at random: curiosity-driven exploration is replaced by random exploration. The margin $\varepsilon$ shifts the threshold for staying: negative values make the controller stickier (it tolerates some plateau before leaving), positive values make it more eager to switch.
+
+**Travel cost.** When the controller commits to leaving, the network enters a *travel* phase of $n_{\text{travel}}$ steps during which no gradient update is performed but the global baseline $\rho_t$ continues to update under $r_t = 0$. After travel, the next task is drawn uniformly at random from the remaining tasks, excluding the one just left. Because $\rho_t$ decays during travel, longer travels leave the agent with a lower estimate of the global return rate; as a consequence, when starting the next task, more modest local progress will still be desirable compared to the low global average, and the controller will tend to stay longer in the patch. This is the classical MVT result that, when travel between patches is expensive, optimal dwell time within each patch increases. Travel steps do not consume the total budget of $6 \times 10^{5}$ training steps.
+
+## Free parameters
+
+All parameters specified in the previous sections are held fixed at the values stated there, with two exceptions: the choice of weight regularizer and the five hyperparameters of the MVT controller. These are the parameters we deliberately leave free across the sweep, either because their best values cannot be determined a priori, and/or because their effect on the trained models is precisely what we want to characterize.
+
+We vary both the *type* and the *coefficient* of the weight regularizer. The type takes one of two values: an $\ell_1$ penalty or a distance-weighted $\ell_1$ penalty. The two types are mutually exclusive: each run uses either an $\ell_1$ penalty with $\lambda_{\text{L1}} \in \{10^{-6},\, 10^{-5},\, 10^{-4},\, 5 \cdot 10^{-4}\}$, or a distance penalty with $\lambda_{\text{dist}} \in \{10^{-5},\, 10^{-4},\, 5 \cdot 10^{-4}\}$.
+
+In addition, five hyperparameters of the MVT controller are varied:
+
+- **Decision temperature** $\tau \in \{10^{-4},\, 10^{-3},\, 3 \cdot 10^{-3},\, 5 \cdot 10^{-3},\, 10^{-2},\, 10^{-1},\, 1.0\}$.
+- **Local progress rate** $\alpha_{\text{local}} \in \{10^{-2},\, 3 \cdot 10^{-2},\, 10^{-1},\, 2 \cdot 10^{-1}\}$.
+- **Global baseline rate** $\beta_{\text{global}} \in \{10^{-4},\, 10^{-3},\, 3 \cdot 10^{-3},\, 10^{-2}\}$.
+- **Travel cost** $n_{\text{travel}} \in \{50,\, 500\}$.
+- **Leave margin** $\varepsilon \in \{0,\, -0.01\}$.
+
+The temperature $\tau$ is varied across four orders of magnitude to map the entire deterministic-to-random regime of the soft MVT rule. The remaining hyperparameters were varied because no previous work has trained RNNs using MVT, so any a priori choice would have been arbitrary; sweeping each of them lets us characterize how MVT-driven curricula shape both the training trajectories and the properties of the resulting networks. The rates $\alpha_{\text{local}}$ and $\beta_{\text{global}}$ jointly set the timescale separation between local and global reward estimates, which determines how much past performance is integrated before a switch can be triggered. The travel cost $n_{\text{travel}}$ is varied between a cheap and an expensive switching regime, leading to curricula with different average dwell times per task. The margin $\varepsilon$ takes either zero (neutral) or a small negative value (mildly sticky).
+
+The two regularization branches yield $4 \times 4 \times 4 \times 2 \times 7 \times 2 = 1\,792$ configurations under $\ell_1$ and $3 \times 4 \times 4 \times 2 \times 7 \times 2 = 1\,344$ configurations under distance, for a total of $3\,136$ trained models. Each model is trained from a single random seed.
+
+# Analyses
+
+We assess the trained networks along three axes: network structure, synaptic density, and cognitive functioning.
+
+## Network structure
+
+The network analysis compares the topology of each trained RNN's recurrent connectivity to the topology of the human structural connectome. We first describe how a single weighted adjacency matrix is extracted from each side, then how the two are compared.
+
+### RNN preprocessing
+
+For each trained network we take a single connectivity matrix and treat it as the RNN's "connectome". The relevant weights are the recurrent block of the fused weight matrix $\mathbf{W}$ introduced in @eq-dynamics, namely the $N \times N$ sub-matrix $W^{\text{rec}}$ acting on the hidden state $\mathbf{h}_t$. We discard the input-to-hidden block, since it carries sensory and rule signals rather than inter-unit recurrent connectivity, and we discard the readout weights $\mathbf{W}_{\text{out}}$ for the same reason.
+
+We then construct a non-negative weighted adjacency matrix $A^{\text{RNN}}$ by taking the element-wise absolute value of the recurrent block **and symmetrizing it,**
+
+$$A^{\text{RNN}}_{ij} = \tfrac{1}{2}\bigl(\bigl|W^{\text{rec}}_{ij}\bigr| + \bigl|W^{\text{rec}}_{ji}\bigr|\bigr), \qquad A^{\text{RNN}}_{ii} = 0,$$ {#eq-rnn-adj}
+
+with the diagonal set to zero so that autaptic self-connections do not contribute to the topology, as it is standard practice in human brain connectomics. Discarding the sign means that we treat excitatory and inhibitory recurrent connections as topologically equivalent edges, also matching the convention adopted on the human side, where streamline counts are sign-less. Given that the recurrent weight matrix was directed ($W^{\text{rec}}_{ij} \neq W^{\text{rec}}_{ji}$ in general), we averaged the two directions yielding a symmetric matrix that can be treated as an undirected weighted graph, exactly like the human connectome.
+
+The procedure yields one $100 \times 100$ adjacency matrix per trained run. The analysis pool covers all sweep configurations that learned the task battery to a basic functional level, operationalized as a fraction of solved tasks of at least $0.3$. This threshold is deliberately loose: it removes networks that failed to train altogether while keeping the bulk of the sweep, including networks that learned only a subset of the tasks.
+
+### Human imaging data preprocessing
+
+Human connectomes were generated from the Human Connectome Project Young Adult (HCPya) dataset (Van Essen et al., 2013). This sample (N = 1065; age range 22-37 years; 54% female) is a large sample of healthy adults. High-quality multishell diffusion-weighted MRI (dMRI; b-values = 1000 s/mm^2^, 2000 s/mm^2^, 3000 s/mm^2^; 90 sampling directions each) was collected by the Washington University-University of Minnesota Consortium (WU-Minn HCP; Harms et al., 2018). This data was accessed in a semi-reconstructed format from DSI Studio's Fiber Data Hub (Yeh et al., 2025). The DSI Studio team took the minimally preprocessed dMRI data and reconstructed it in MNI space using q-space diffeomorphic reconstruction (Yeh et al., 2011). We utilized the GQI reconstructed FIB files.
+
+Tractography was conducted using the 100-region Schaefer atlas (Schaefer et al., 2018) using DSI Studio's whole-brain deterministic tractography (Yeh et al., 2013). Tracking parameters were: 35 degree turning angle, 5 million maximum fiber count, 1.0mm step size, 30mm minimum, and 250mm maximum fiber length. The streamlines were counted using count-pass connectivity, which identifies regions as connection if the streamline passes through that region. Fiber tracking yield 100 x 100 adjacency matrices per participant.
+
+### Joint Preprocessing
+
+Across the HCP-YA cohort, the native density of the Schaefer-100 connectomes ranged from $0.138$ to $0.200$ (mean $0.169$, SD $0.010$). We thresholded every network – individual HCP-YA connectomes and every RNN matrix – to the common target density $\rho^{\star} = 0.135$, just below the lower bound of this empirical distribution, so that the threshold could be applied uniformly to all human and RNN networks without artificially sparsifying any subject's connectome. Thresholding was performed by ranking the off-diagonal upper-triangular entries by absolute weight and retaining the top $\lfloor \rho^{\star} \cdot N(N-1)/2 \rfloor = 668$ edges in each network, setting the rest to zero. After thresholding, the surviving edge weights of every network were divided by their mean, so that each connectome is expressed on a common, unit-free weight scale. This mean-normalization makes the weighted topological measures scale-invariant, so that differences between RNN and human networks reflect the relative organization of their connections rather than the absolute magnitude of the weights (which differ arbitrarily between recurrent weights and streamline counts).
+
+### Topological measures
+
+On each thresholded network we computed three graph-theoretic measures, chosen because they are largely independent of each other and are widely used to characterize biological brain connectomes (Bullmore & Sporns, 2009; Sporns, 2013): modularity, global efficiency, and rich-club coefficient. Together, they summarize complementary aspects of network organization – segregation, integration, and hierarchical structure – and provide a compact, three-dimensional fingerprint of a connectome's topology.
+
+*Modularity* (Newman, 2006) measures the extent to which the network decomposes into densely connected sub-communities with comparatively few connections between them, and is therefore an index of *segregation*. We partition the thresholded weighted graph into communities using the Leiden algorithm (Traag et al., 2019), which improves on the widely used Louvain algorithm (Blondel et al., 2008) by guaranteeing well-connected communities, and report the modularity $Q$ of the recovered partition:
+
+$$Q = \frac{1}{2m}\sum_{i,j}\left[A_{ij} - \frac{k_i k_j}{2m}\right]\delta(c_i, c_j),$$ {#eq-modularity}
+
+where $A_{ij}$ is the (thresholded, weighted) adjacency matrix, $k_i = \sum_j A_{ij}$ is the strength of node $i$, $m = \tfrac{1}{2}\sum_{ij}A_{ij}$ is the total network strength, $c_i$ is the community assigned to node $i$, and $\delta$ is the Kronecker delta. Higher $Q$ indicates stronger community structure.
+
+*Global efficiency* (Latora & Marchiori, 2001) measures the typical ease of communication between any two nodes, treating each edge as a conductance through which signals propagate, and is therefore an index of *integration*. To compute it on a weighted graph, edge weights are first inverted to distances, $d_{ij} = 1/A_{ij}$, and the shortest-path distance $L_{ij}$ between every pair of nodes is computed under the resulting metric. The global efficiency is then the average inverse shortest-path distance,
+
+$$E = \frac{1}{N(N-1)} \sum_{i \neq j} \frac{1}{L_{ij}},$$ {#eq-efficiency}
+
+so that strongly connected pairs of nodes – connected either directly or through short, high-weight paths – contribute more, and pairs that are only reachable through long or weak detours contribute less.
+
+*Rich-club organization* (Colizza et al., 2006; van den Heuvel & Sporns, 2011) measures the extent to which high-degree nodes are preferentially connected to one another, forming a densely interconnected hub backbone, and is therefore an index of *hierarchical structure*. We used the weighted rich-club coefficient (Opsahl et al., 2008): for each degree threshold$k$, it compares the total connection weight among nodes of degree greater than $k$ with the largest weight those edges could carry if the strongest connections of the entire network were concentrated among them,
+
+$$\phi^{w}(k) = \frac{\sum_{i,j\,:\,d_i, d_j > k} A_{ij}}{\sum_{l=1}^{E_{>k}} w^{\text{rank}}_l},$$ {#eq-rc}
+
+where $d_i$ is the (binary) degree of node $i$, $E_{>k}$ is the number of edges among the nodes of degree greater than $k$, and $w^{\text{rank}}_1 \geq w^{\text{rank}}_2 \geq \dots$ are the edge weights of the whole network ranked in descending order. To distinguish genuine rich-club organization from the level expected by the network's degree sequence alone, $\phi^{w}(k)$ is normalized by the same coefficient computed on an ensemble of $100$ degree-preserving random reference graphs generated by edge rewiring, $\langle\phi^{w}_{\text{rand}}(k)\rangle$. We summarize the resulting normalized curve by its mean over the well-sampled range of degree thresholds $\mathcal{K}$, those for which at least $10$ nodes remain above threshold, which trims the unstable high-$k$ tail:
+
+$$\phi_{\text{norm}} = \operatorname*{mean}_{k \in \mathcal{K}} \frac{\phi^{w}(k)}{\langle\phi^{w}_{\text{rand}}(k)\rangle},$$ {#eq-rcnorm}
+
+with values greater than one indicating a hub backbone that is denser than chance.
+
+All measures were computed with a single shared Python routine applied identically to the RNN matrices and the human matrices, using the Brain Connectivity Toolbox (bctpy; Rubinov & Sporns, 2010) for global efficiency and the weighted rich club, the Leiden algorithm (leidenalg with python-igraph; Traag et al., 2019) for the community partition, and NetworkX for the evaluation of Newman's $Q$. We refer to the triplet $(Q, E, \phi_{\text{norm}})$ as the *topological fingerprint* of a connectome.
+
+### Similarity measure
+
+To quantify how brain-like an RNN's topology is, we compared its fingerprint $\mathbf{x}^{(r)} = (Q, E, \phi_{\text{norm}})^{\top}$ to the average human fingerprint $\boldsymbol{\mu}$, defined as the mean fingerprint across the individual HCP-YA participants. A plain Euclidean distance is inappropriate here because the three measures vary by very different amounts across healthy brains and are mutually correlated (the strongest pairwise correlation is between modularity and rich club, with $r \approx -0.3$). We therefore used the Mahalanobis distance (Mahalanobis, 1936),
+
+$$D_{\text{M}}^{(r)} = \sqrt{\bigl(\mathbf{x}^{(r)} - \boldsymbol{\mu}\bigr)^{\top}\, \boldsymbol{\Sigma}^{-1}\, \bigl(\mathbf{x}^{(r)} - \boldsymbol{\mu}\bigr)},$$ {#eq-mahal}
+
+where $\boldsymbol{\Sigma}$ is the covariance of the fingerprint across individual HCP-YA participants. Distance is thus expressed in units of human inter-individual variability. To obtain a similarity score from the distance score, we linearly rescaled $D_{\text{M}}$ across the analyzed networks to a similarity $s \in [0, 1]$ (arbitrary units; $s = 1$ for the most human-like network, $s = 0$ for the least). This score is the variable used in the regression and enrichment analyses below.
+
+### Regression analysis
+
+We asked which of the manipulated components made a network's connectome more brain-like, using the network-similarity score $s$ as the outcome. The predictors were the three components varied across the sweep: the foraging temperature$\tau$, the regularization strength, and the regularization type (distance-based vs. L1). We fitted the full three-way factorial linear model and assessed term significance with Type-II analysis of variance, which is appropriate for the mildly unbalanced design. Because the weakest regularization level existed only for L1, it was excluded so that the design was fully crossed (seven temperatures × three strengths × two regularization types). We then performed Tukey-corrected post-hoc tests on the estimated marginal means.
+
+**Results.** The model explained $86\%$ of the variance in network similarity ($F_{41,\,2338} = 360.3$, $p < 0.0001$). Crucially, the three-way interaction between the three components was significant ($F_{12,\,2338} = 5.3$, $p < 0.0001$), indicating that the effect of temperature depended jointly on the type and strength of regularization.
+
+Post-hoc tests on the estimated marginal means located the optimum. Within the distance-based, strongest-regularization regime, predicted similarity peaked at $\tau = 0.003$ (estimated marginal $s = 0.81$, 95% CI $[0.79, 0.82]$), the most brain-like cell of the entire design. In this regime the curiosity-driven temperatures were the most human-like: $\tau = 0.003$ exceeded the random regime $\tau = 1.0$ by $\Delta s = 0.06$ (Tukey $p < 10^{-7}$) and exceeded every higher temperature $\tau \geq 0.01$ (all Tukey $p < 10^{-6}$), while the lowest temperature $\tau = 0.0001$ was statistically indistinguishable from the peak ($s = 0.80$, Tukey $p \approx 1$). This temperature profile was specific to the strongly, distance-regularized networks: under L1 regularization the predicted similarity across the same temperatures spanned only $s \approx 0.40$–$0.42$ and was essentially flat, consistent with the significant three-way interaction.
+
+To check that the result does not depend on the four remaining hyperparameters of the MVT controller (the local progress rate $\alpha_{\text{local}}$, the global baseline rate $\beta_{\text{global}}$, the travel cost $n_{\text{travel}}$, and the leave margin $\varepsilon$), we re-fitted the model with each of the four hyperparameters in turn fully crossed with the three components. The three-way interaction remained significant in every case (all$p < 10^{-4}$), and a regime with curiosity-driven temperature and strong, distance-based regularization remained the predicted optimum across all $64$ combinations of the four hyperparameters.
+
+### Enrichment analysis
+
+Next, we asked which parameter values are over-represented among the networks that actually reached the most brain-like topology. From the full functional pool, we took the $100$ networks with the highest network-similarity score $s$ (equivalently, the smallest Mahalanobis distance to the average human fingerprint, i.e., the mean across the individual HCP-YA networks). For each swept parameter and each of its values we computed an enrichment factor, the proportion of the top-$100$ networks taking that value divided by its proportion in the full pool, so that a factor above one indicates over-representation among the most brain-like networks. For each parameter we tested whether the distribution of values among the top-$100$ differed from the pool with a $\chi^2$ test whose $p$-value was obtained by Monte-Carlo simulation ($B = 10{,}000$ resamples), which is exact for the small expected counts in some cells.
+
+**Results.** **The composition of the** $100$ most brain-like networks differed strongly from the pool on all three components: regularization type ($\chi^2 = 145.5$, $p < 0.0001$), regularization strength ($\chi^2 = 211.8$, $p < 0.0001$) and temperature ($\chi^2 = 76.6$, $p < 0.0001$). The over-represented values were consistently distance-based regularization, the strongest regularization, and the curiosity-driven temperatures, with L1, weak regularization and the random regime correspondingly depleted (enrichment factors in Fig. X).
+
+## Synaptic density
+
+Having characterized network structure at the end of training, we next examined how networks evolved over the course of training. The goal is to investigate whether RNNs that are more human-like in terms of foraging and biophysical constraints also display more human-like developmental trajectories of synaptic density and cognitive performance. For RNNs we tracked the density of recurrent weights across training; for humans, the density of synapses across the lifespan. Both quantities measure how densely a system is wired at a given moment.
+
+### Data
+
+**RNNs.** For each network the recurrent weight matrix was saved every $40{,}000$ training steps, giving $16$ snapshots spanning the full $6\times10^{5}$-step run. At each snapshot we summarized the network's wiring by the sum of the absolute values of all recurrent weights, i.e., the total recurrent connection strength at that point in training. Stacking the snapshots gives, for every network, a trajectory of total connection strength over training.
+
+**Human data.** No single dataset providing comparable measurements across multiple cortical regions was available, so we compiled one by harmonizing data from Huttenlocher (1982) for visual cortex and Huttenlocher & Dabholkar (1997) for auditory and prefrontal cortex. These studies provide a mean synaptic density (synapses per $100\,\mu\text{m}^3$) together with its standard error for each age and cortical region, yielding $40$ summary measurements spanning the visual, auditory and prefrontal cortices from the fetal period (0.52 years post-conception) to late adulthood (72 years of age).
+
+To obtain a smooth reference trajectory we min–max normalized the mean densities to $[0, 1]$ and fitted a generalized additive model (a smooth function of $\log_{10}$ age). Because each point is a reported group mean rather than a raw observation, we weighted it by the inverse of its squared standard error, the standard approach in meta-analysis, so that precisely estimated means dominate the fit and uncertain ones contribute little. The fitted smooth was highly significant ($edf = 3.45$, $p < 0.0001$, $85.7\%$ of deviance explained).
+
+### Preprocessing
+
+The human and RNN trajectories were expressed on a common, unit-free amplitude scale: density min–max normalized to $[0, 1]$ on each side. This way, their shapes can be compared directly. Their time axes, however, are not yet comparable: human time is measured in years, whereas an RNN has no intrinsic age and its trajectory runs over training steps. A further complication is that the duration of an RNN's training need not correspond to a *full* human lifespan. A given network's trajectory might align only with an early window of development – for instance, the synaptogenesis rise alone – rather than the complete rise-and-prune arc. Which portion of the lifespan each RNN captures is unknown a priori and must itself be inferred.
+
+We therefore tested a range of candidate lifespans. For each candidate from $3$ to $75$ years (in $3$-year steps), the RNN's training-step axis was mapped onto ages from birth to that candidate. The resulting trajectory was smoothed with a generalized additive model on $\log_{10}$ age, and compared with the human reference curve over the same age window. The match was scored on three properties of the two curves: their overall shape (the correlation between them), the timing of the peak relative to the lifespan, and the fraction of density pruned after the peak. The candidate lifespan minimizing the combined distance across the three properties was taken as that network's fitted age: a small fitted age means the trajectory corresponds only to an early developmental window, a large one that it spans a fuller lifespan. Every network thereby received a single fitted age, with substantial variability across the population.
+
+### Analysis
+
+The analysis has two goals. The first is to test whether fitted age differs between the $100$ networks most similar to the human connectome in topology (smallest network Mahalanobis distance; see the network analysis above) and the rest of the RNNs ($N = 2{,}704$): we expect the most similar networks to have more plausible fitted ages, capturing more of the lifespan trajectory. To test this we compared the distribution of fitted ages in the two groups with a $\chi^2$ test, with the $p$-value obtained by Monte-Carlo simulation ($B = 10{,}000$ resamples) given the small expected counts in some age bins.
+
+The second goal is to relate the inferred developmental trajectory to task performance. To test this, within the $100$ most human-like networks we modeled end-of-training accuracy as a smooth, potentially non-linear function of fitted age with a generalized additive model.
+
+**Results.** The two groups had markedly different fitted-age distributions ($\chi^2 = 88.7$, $p < 0.0001$). The most human-like networks were assigned substantially older ages (median fitted age $32$ vs $9$ years): their weight trajectories tracked a fuller developmental arc, an extended rise-and-prune course, whereas the rest mostly matched only a brief early window (Fig. X).
+
+When looking at the relationship between fitted age and accuracy, we found a strong, non-linear effect ($edf = 2.63$, $F = 15.9$, $p < 0.001$, $35.5\%$ of deviance explained): accuracy rose with fitted age to a peak at $\approx 16$ years and declined thereafter, recovering the characteristic rise and gradual decline of cognitive performance across the human lifespan.
+
+## Cognitive functioning
+
+Finally, we probed the RNNs' emergent cognitive abilities. To do so, we devised a test of compositional generalization: the capacity to handle novel arrangements of familiar parts (McCoy, 2022; Fodor & Pylyshyn, 1988). This kind of test cannot rely on zero-shot performance, whereby an agent is tested directly on new tasks with no further training. The reason is that a network cued for a task it has never seen, much like a person given a new task with no instructions, needs a short period of trial and error simply to establish what is being asked. We therefore allow a brief adaptation phase, but constrain it so that the network cannot learn the held-out task from scratch: it can succeed only by recruiting recurrent dynamics it already has. To this end every trained weight is frozen and a single new rule-input channel is exposed for adaptation (see *Implementation*); This way, a held-out task can be solved only by routing the new input into existing recurrent computations, that is, by recombining primitives the network already possesses.
+
+Compositional reuse is therefore indexed by the *speed* of adaptation rather than by the accuracy eventually reached. To make that speed interpretable, we applied the same procedure to tasks the network had already been trained on, again withholding any cue that they were familiar: if a network's internal dynamics for a known task remain intact and reachable, it should re-solve that task almost immediately. A held-out recombination solved as quickly as such a familiar task thus reflects genuine reuse of existing dynamics, whereas one solved slowly indicates the solution is being rebuilt through the new channel. Compositional generalization is demonstrated only when a network solves both a novel recombination and its familiar reference rapidly: the bottom-left corner of the solve-time plane (Fig. 4G-H).
+
+**Held-out tasks.** Compositional generalization can only be tested if particular combinations of primitives are systematically withheld during training; For this reason, while *delay* primitive was trained in all three families of tasks (Reaching, Decision-making, and Match-to-sample), the *anti* primitive was only trained in the Reach and Decision-making families but never in Match-to-sample, and the *context* primitive only in the Reach family, never in Decision-making or Match-to-sample. This resulted in having 12 tasks that were never experienced during training by the RNNs (i.e., the held-out tasks). Because every primitive was itself learned somewhere, solving these tasks does not require acquiring a new operation, only recombining existing ones.
+
+Each held-out task was paired with a familiar reference task that carried the same primitives but came from a family in which that arrangement had been trained. For example, the delayed contextual decision-making task was paired with the delayed contextual go task. The reference therefore matched the held-out task in complexity while being one the network had already learned.
+
+**Implementation.** At test, every weight learned during training (input, recurrent and readout) was frozen. The rule input was then extended by a single new channel with its own randomly initialized connections into the hidden layer, and only these new connections were left trainable; a gradient mask prevented any other weight from changing. The network was then optimized to perform a task using only this new input, with Adam (learning rate $10^{-2}$, batch size $32$), the same recurrent noise injected during training, a categorical cross-entropy loss, and gradient-norm clipping at $1$. Performance was evaluated every $100$ optimization steps on $50$ fresh trials; a task was counted as solved at the first evaluation exceeding $90\%$ accuracy, and optimization stopped early once accuracy reached $99\%$. Each task was allotted a budget of $5{,}000$ optimization steps, and tasks not solved within the budget were treated as right-censored at $5{,}000$. The new input was re-initialized independently for every task. Each selected network was probed on all held-out tasks and, as the baseline described above, on matched familiar training tasks.
+
+To disentangle the contributions of the two human-like components (curiosity-driven exploration and brain-like spatial constraints) we compared four groups of trained networks. The human-like cohort consisted of the $100$ networks most similar to human topology; Among those, we retained the ones that had learned the task battery best (fraction of training tasks solved $\geq 0.9$). These networks lay in the curiosity-driven (foraging temperature $\tau < 0.01$), strongly regularized regime. For each retained network, three matched control networks were then drawn from the same trained population, sharing all hyperparameters with their human-like counterpart except for one or both of the two human-like components: the Temperature Control is the network whose foraging temperature is instead $\tau = 1.0$ (an essentially random task-selection regime); the Regularization Control is the network whose regularization strength is instead the minimum value available; and the Both Control is the network with both substitutions. The four cohorts therefore cross temperature (low vs random) with regularization strength (high vs minimal). The cohorts contained $25$ to $30$ networks each, for a total of $110$ networks tested.
+
+### Analysis
+
+For every network and pair we recorded the number of adaptation steps to solve the reference task and the held-out task, treating either task unsolved within the $5{,}000$-step budget as right-censored. Each pair was summarized by the geometric mean of its two solve times, $G=\sqrt{t_\text{train}\,t_\text{held}}$ (Figure 4G-H), and $\log G$ was modeled with a log-normal accelerated-failure-time model that accommodates the censoring; in this parameterization a positive coefficient denotes a longer (slower) solve time. The model included temperature (curiosity, $\tau<0.01$, vs random, $\tau=1$), regularization (strong vs minimal), and their interaction with the type of ability tested (context added to a Decision-making; *anti* added to a Match-to-sample; context and *anti* added to a Match-to-sample). Finally, differences between cohorts could be confounded by how well each network had learned the relevant abilities by the end of training. We therefore added the network's end-of-training accuracy on the base abilities probed by the test.
+
+**Results.** Curiosity-driven exploration (low temperature) led to faster resolution in all three tests (context added to a decision, $\beta = -0.50$, $SE = 0.058$, $t = -8.60$, $p < 0.001$; *anti* added to a match, $\beta = -0.28$, $SE = 0.072$, $t = -3.97$, $p < 0.001$; context and *anti* added to a match, $\beta = -0.30$, $SE = 0.072$, $t = -4.18$, $p < 0.001$). In addition, strong regularization solved faster than minimal regularization ($\beta = -0.41$, $SE = 0.039$, $t = -10.66$, $p < 0.001$).
