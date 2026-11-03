@@ -34,7 +34,7 @@ Mod_Cog/                         Mod-Cog task definitions (Khona et al., CC0)
 
 **Operating systems tested**
 - Windows 11 Enterprise (build 26200): demo, analyses, and figures.
-- Linux (SLURM cluster): full parameter sweep (training of all networks) and per-run extraction.
+- Linux, Ubuntu 24.04 LTS (SLURM cluster): full parameter sweep (training of all networks) and per-run extraction.
 
 **Software**
 - Python 3.9 (tested 3.9.24). Packages and tested versions are pinned in [`requirements.txt`](requirements.txt): numpy 1.23.5, pandas 2.3.3, scipy 1.13.1, torch 2.8.0, matplotlib 3.9.4, seaborn 0.13.2, gym 0.25.2, NeuroGym (commit `b060cc2`), scikit-learn 1.6.1, tqdm 4.68.2, networkx 3.2.1, h5py 3.14.0, bctpy 0.6.1, leidenalg 0.12.0, igraph 1.0.0, netneurotools 0.3.0.
