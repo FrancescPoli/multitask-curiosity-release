@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite it using the metadata below."
+title: 'Data and code for "Curiosity shapes brain-like architectures and functions"'
+type: software
+authors:
+  - family-names: Poli
+    given-names: Francesco
+    orcid: "https://orcid.org/0000-0001-9841-0056"
+license:
+  - MIT
+  - CC-BY-4.0
+version: 1.0.0
