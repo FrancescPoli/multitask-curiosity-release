@@ -1,10 +1,20 @@
-
-numpy>=1.20
-pandas>=1.3
-torch>=1.10
-matplotlib>=3.4
-seaborn>=0.11
-gym>=0.19
-neurogym
-scikit-learn
-tqdm
+# Python 3.9 — versions tested (see README, System requirements)
+numpy==1.23.5
+pandas==2.3.3
+scipy==1.13.1
+torch==2.8.0
+matplotlib==3.9.4
+seaborn==0.13.2
+gym==0.25.2
+scikit-learn==1.6.1
+tqdm==4.68.2
+numba  # only needed for analysis/Cognitive_analysis/fit_mvt_models.py
+networkx==3.2.1
+h5py==3.14.0
+bctpy==0.6.1
+leidenalg==0.12.0
+igraph==1.0.0
+netneurotools==0.3.0
+# NeuroGym, pinned to the commit used in this study. Must be an editable (-e)
+# install: a regular install omits neurogym/envs/contrib and the import fails.
+-e git+https://github.com/neurogym/neurogym.git@b060cc29dc36243e6d6b09ae480381ed1aa35207#egg=neurogym

@@ -32,3 +32,8 @@ analysis/Network_analysis/Data/Atlases/aal_info.m
 analysis/Network_analysis/Data/Atlases/coords.mat
 analysis/Network_analysis/Data/Atlases/1year_coords.mat
 analysis/Network_analysis/Data/Atlases/2year_coords.mat
+
+# Demo outputs
+demo/output/
+# Editable pip installs (NeuroGym)
+src/

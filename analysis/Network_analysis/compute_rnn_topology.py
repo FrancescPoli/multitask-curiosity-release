@@ -34,10 +34,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Compute RNN Topological Metrics")
     parser.add_argument("--sweep_dir", type=str, required=True, help="Path to sweep directory (e.g., logs/sweep/forage_v5)")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of runs (default: None = all)")
+    parser.add_argument("--output", type=str, default="analysis/Network_analysis/Results/rnn_topological_metrics.csv",
+                        help="Output CSV file")
     return parser.parse_args()
-
-OUTPUT_DIR = Path("analysis/Network_analysis/Results")
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def compute_metrics(adj_matrix, run_id="Unknown", density_override=None):
@@ -109,7 +108,8 @@ def main():
         return
 
     df = pd.DataFrame(results)
-    out_path = OUTPUT_DIR / "rnn_topological_metrics.csv"
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_path, index=False)
     print(f"Saved results to {out_path}")
 
