@@ -1,12 +1,11 @@
 cff-version: 1.2.0
 message: "If you use this code or data, please cite it using the metadata below."
 title: 'Data and code for "Curiosity shapes brain-like architectures and functions"'
+abstract: "Code and data accompanying the manuscript 'Curiosity shapes brain-like architectures and functions'. Code is released under the MIT License; data under CC BY 4.0 (see LICENSE-DATA)."
 type: software
 authors:
   - family-names: Poli
     given-names: Francesco
     orcid: "https://orcid.org/0000-0001-9841-0056"
-license:
-  - MIT
-  - CC-BY-4.0
+license: MIT
 version: 1.0.0
